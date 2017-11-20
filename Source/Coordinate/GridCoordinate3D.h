@@ -25,6 +25,8 @@ class GridCoordinate3DTemplate: public GridCoordinate2DTemplate<TcoordType, doSi
 
 public:
 
+  static const Dimension dimension;
+
   CUDA_DEVICE CUDA_HOST GridCoordinate3DTemplate ()
     : GridCoordinate2DTemplate<TcoordType, doSignChecks> (), z (0)
   {
@@ -259,6 +261,37 @@ GridCoordinate3DTemplate<TcoordType, doSignChecks> CUDA_DEVICE CUDA_HOST expand 
   TcoordType x = coord.GridCoordinate1DTemplate<TcoordType, doSignChecks>::getX ();
   TcoordType y = coord.GridCoordinate2DTemplate<TcoordType, doSignChecks>::getY ();
   return GridCoordinate3DTemplate<TcoordType, doSignChecks> (x, y, 0);
+}
+
+template<class TcoordType, bool doSignChecks>
+GridCoordinate3DTemplate<TcoordType, doSignChecks> CUDA_DEVICE CUDA_HOST expand2 (const GridCoordinate1DTemplate<TcoordType, doSignChecks> &coord)
+{
+  TcoordType x = coord.GridCoordinate1DTemplate<TcoordType, doSignChecks>::getX ();
+  return GridCoordinate3DTemplate<TcoordType, doSignChecks> (x, 0, 0);
+}
+
+template<class TcoordType, bool doSignChecks>
+GridCoordinate3DTemplate<TcoordType, doSignChecks> CUDA_DEVICE CUDA_HOST expandTo3D (const GridCoordinate1DTemplate<TcoordType, doSignChecks> &coord)
+{
+  TcoordType x = coord.GridCoordinate1DTemplate<TcoordType, doSignChecks>::getX ();
+  return GridCoordinate3DTemplate<TcoordType, doSignChecks> (x, 0, 0);
+}
+
+template<class TcoordType, bool doSignChecks>
+GridCoordinate3DTemplate<TcoordType, doSignChecks> CUDA_DEVICE CUDA_HOST expandTo3D (const GridCoordinate2DTemplate<TcoordType, doSignChecks> &coord)
+{
+  TcoordType x = coord.GridCoordinate1DTemplate<TcoordType, doSignChecks>::getX ();
+  TcoordType y = coord.GridCoordinate2DTemplate<TcoordType, doSignChecks>::getY ();
+  return GridCoordinate3DTemplate<TcoordType, doSignChecks> (x, y, 0);
+}
+
+template<class TcoordType, bool doSignChecks>
+GridCoordinate3DTemplate<TcoordType, doSignChecks> CUDA_DEVICE CUDA_HOST expandTo3D (const GridCoordinate3DTemplate<TcoordType, doSignChecks> &coord)
+{
+  TcoordType x = coord.GridCoordinate1DTemplate<TcoordType, doSignChecks>::getX ();
+  TcoordType y = coord.GridCoordinate2DTemplate<TcoordType, doSignChecks>::getY ();
+  TcoordType z = coord.GridCoordinate3DTemplate<TcoordType, doSignChecks>::getZ ();
+  return GridCoordinate3DTemplate<TcoordType, doSignChecks> (x, y, z);
 }
 
 typedef GridCoordinate3DTemplate<grid_coord, true> GridCoordinate3D;
