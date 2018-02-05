@@ -178,6 +178,10 @@ private:
   static const bool doNeedHy;
   static const bool doNeedHz;
 
+  static const bool doNeedSigmaX;
+  static const bool doNeedSigmaY;
+  static const bool doNeedSigmaZ;
+
 private:
 
   template <uint8_t grid_type>

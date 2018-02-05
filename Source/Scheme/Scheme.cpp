@@ -192,6 +192,24 @@ const bool Scheme<Type, TCoord, Layout>::doNeedHz = Type == SchemeType::Dim1_ExH
                                                     || Type == SchemeType::Dim2_TEz || Type == SchemeType::Dim3;
 
 template <SchemeType Type, template <typename, bool> class TCoord, typename Layout>
+const bool Scheme<Type, TCoord, Layout>::doNeedSigmaX = Type == SchemeType::Dim1_EyHz || Type == SchemeType::Dim1_EzHy
+                                                    || Type == SchemeType::Dim2_TEy || Type == SchemeType::Dim2_TEz
+                                                    || Type == SchemeType::Dim2_TMy || Type == SchemeType::Dim2_TMz
+                                                    || Type == SchemeType::Dim3;
+
+template <SchemeType Type, template <typename, bool> class TCoord, typename Layout>
+const bool Scheme<Type, TCoord, Layout>::doNeedSigmaY = Type == SchemeType::Dim1_ExHz || Type == SchemeType::Dim1_EzHx
+                                                    || Type == SchemeType::Dim2_TEx || Type == SchemeType::Dim2_TEz
+                                                    || Type == SchemeType::Dim2_TMx || Type == SchemeType::Dim2_TMz
+                                                    || Type == SchemeType::Dim3;
+
+template <SchemeType Type, template <typename, bool> class TCoord, typename Layout>
+const bool Scheme<Type, TCoord, Layout>::doNeedSigmaZ = Type == SchemeType::Dim1_ExHy || Type == SchemeType::Dim1_EyHx
+                                                    || Type == SchemeType::Dim2_TEx || Type == SchemeType::Dim2_TEy
+                                                    || Type == SchemeType::Dim2_TMx || Type == SchemeType::Dim2_TMy
+                                                    || Type == SchemeType::Dim3;
+
+template <SchemeType Type, template <typename, bool> class TCoord, typename Layout>
 Scheme<Type, TCoord, Layout>::Scheme (Layout *layout,
                                       const TC& totSize,
                                       time_step tStep)
@@ -330,9 +348,9 @@ Scheme<Type, TCoord, Layout>::Scheme (Layout *layout,
         B1z = doNeedHz ? new ParallelGrid (layout->getHzSize (), bufSize, 0, layout->getHzSizeForCurNode (), "B1z") : NULLPTR;
       }
 
-      SigmaX = new ParallelGrid (layout->getEpsSize (), bufSize, 0, layout->getEpsSizeForCurNode (), "SigmaX");
-      SigmaY = new ParallelGrid (layout->getEpsSize (), bufSize, 0, layout->getEpsSizeForCurNode (), "SigmaY");
-      SigmaZ = new ParallelGrid (layout->getEpsSize (), bufSize, 0, layout->getEpsSizeForCurNode (), "SigmaZ");
+      SigmaX = doNeedSigmaX ? new ParallelGrid (layout->getEpsSize (), bufSize, 0, layout->getEpsSizeForCurNode (), "SigmaX") : NULLPTR;
+      SigmaY = doNeedSigmaY ? new ParallelGrid (layout->getEpsSize (), bufSize, 0, layout->getEpsSizeForCurNode (), "SigmaY") : NULLPTR;
+      SigmaZ = doNeedSigmaZ ? new ParallelGrid (layout->getEpsSize (), bufSize, 0, layout->getEpsSizeForCurNode (), "SigmaZ") : NULLPTR;
     }
 
     if (solverSettings.getDoUseAmplitudeMode ())
@@ -416,9 +434,9 @@ Scheme<Type, TCoord, Layout>::Scheme (Layout *layout,
         B1z = doNeedHz ? new Grid<TC> (layout->getHzSize (), 0, "B1z") : NULLPTR;
       }
 
-      SigmaX = new Grid<TC> (layout->getEpsSize (), 0, "SigmaX");
-      SigmaY = new Grid<TC> (layout->getEpsSize (), 0, "SigmaY");
-      SigmaZ = new Grid<TC> (layout->getEpsSize (), 0, "SigmaZ");
+      SigmaX = doNeedSigmaX ? new Grid<TC> (layout->getEpsSize (), 0, "SigmaX") : NULLPTR;
+      SigmaY = doNeedSigmaY ? new Grid<TC> (layout->getEpsSize (), 0, "SigmaY") : NULLPTR;
+      SigmaZ = doNeedSigmaZ ? new Grid<TC> (layout->getEpsSize (), 0, "SigmaZ") : NULLPTR;
     }
 
     if (solverSettings.getDoUseAmplitudeMode ())
@@ -1305,9 +1323,9 @@ Scheme<Type, TCoord, Layout>::calculateFieldStepIterationPML (time_step t,
     valField1 = grid->getFieldPointValue (pos);
   }
 
-  FPValue material1 = yeeLayout->getMaterial (posAbs, gridPMLType1, materialGrid1, materialGridType1);
-  FPValue material4 = yeeLayout->getMaterial (posAbs, gridPMLType1, materialGrid4, materialGridType4);
-  FPValue material5 = yeeLayout->getMaterial (posAbs, gridPMLType1, materialGrid5, materialGridType5);
+  FPValue material1 = materialGrid1 ? yeeLayout->getMaterial (posAbs, gridPMLType1, materialGrid1, materialGridType1) : 0;
+  FPValue material4 = materialGrid4 ? yeeLayout->getMaterial (posAbs, gridPMLType1, materialGrid4, materialGridType4) : 0;
+  FPValue material5 = materialGrid5 ? yeeLayout->getMaterial (posAbs, gridPMLType1, materialGrid5, materialGridType5) : 0;
 
   FPValue modifier = material1 * materialModifier;
   if (useMetamaterials)
@@ -1353,6 +1371,9 @@ Scheme<Type, TCoord, Layout>::calculateFieldStepIterationPMLMetamaterials (time_
 
   FPValue material1;
   FPValue material2;
+
+  // TODO: fix this
+  ASSERT(0);
   FPValue material = yeeLayout->getMetaMaterial (posAbs, gridType,
                                                  materialGrid1, materialGridType1,
                                                  materialGrid2, materialGridType2,
@@ -1404,7 +1425,7 @@ Scheme<Type, TCoord, Layout>::calculateFieldStepIteration (time_step t,
   // TODO: [possible] move 1D gridValues to 3D gridValues array
   FieldPointValue *valField = grid->getFieldPointValue (pos);
 
-  FPValue material = yeeLayout->getMaterial (posAbs, gridType, materialGrid, materialGridType);
+  FPValue material = materialGrid ? yeeLayout->getMaterial (posAbs, gridType, materialGrid, materialGridType) : 0;
 
   TC pos11;
   TC pos12;
@@ -2206,19 +2227,19 @@ template <>
 void
 Scheme<SchemeType::Dim1_ExHy, GridCoordinate1DTemplate, PYL>::initSigmas ()
 {
-  SchemeHelper::initSigmaX<GridCoordinate1DTemplate, PYL> (yeeLayout, gridStep, SigmaX);
+  SchemeHelper::initSigmaX<GridCoordinate1DTemplate, PYL> (yeeLayout, gridStep, SigmaZ);
 };
 template <>
 void
 Scheme<SchemeType::Dim1_ExHz, GridCoordinate1DTemplate, PYL>::initSigmas ()
 {
-  SchemeHelper::initSigmaX<GridCoordinate1DTemplate, PYL> (yeeLayout, gridStep, SigmaX);
+  SchemeHelper::initSigmaX<GridCoordinate1DTemplate, PYL> (yeeLayout, gridStep, SigmaY);
 };
 template <>
 void
 Scheme<SchemeType::Dim1_EyHx, GridCoordinate1DTemplate, PYL>::initSigmas ()
 {
-  SchemeHelper::initSigmaX<GridCoordinate1DTemplate, PYL> (yeeLayout, gridStep, SigmaX);
+  SchemeHelper::initSigmaX<GridCoordinate1DTemplate, PYL> (yeeLayout, gridStep, SigmaZ);
 };
 template <>
 void
@@ -2230,7 +2251,7 @@ template <>
 void
 Scheme<SchemeType::Dim1_EzHx, GridCoordinate1DTemplate, PYL>::initSigmas ()
 {
-  SchemeHelper::initSigmaX<GridCoordinate1DTemplate, PYL> (yeeLayout, gridStep, SigmaX);
+  SchemeHelper::initSigmaX<GridCoordinate1DTemplate, PYL> (yeeLayout, gridStep, SigmaY);
 };
 template <>
 void
@@ -2245,15 +2266,15 @@ template <>
 void
 Scheme<SchemeType::Dim2_TEx, GridCoordinate2DTemplate, PYL>::initSigmas ()
 {
-  SchemeHelper::initSigmaX<GridCoordinate2DTemplate, PYL> (yeeLayout, gridStep, SigmaX);
-  SchemeHelper::initSigmaY<GridCoordinate2DTemplate, PYL> (yeeLayout, gridStep, SigmaY);
+  SchemeHelper::initSigmaX<GridCoordinate2DTemplate, PYL> (yeeLayout, gridStep, SigmaY);
+  SchemeHelper::initSigmaY<GridCoordinate2DTemplate, PYL> (yeeLayout, gridStep, SigmaZ);
 };
 template <>
 void
 Scheme<SchemeType::Dim2_TEy, GridCoordinate2DTemplate, PYL>::initSigmas ()
 {
   SchemeHelper::initSigmaX<GridCoordinate2DTemplate, PYL> (yeeLayout, gridStep, SigmaX);
-  SchemeHelper::initSigmaY<GridCoordinate2DTemplate, PYL> (yeeLayout, gridStep, SigmaY);
+  SchemeHelper::initSigmaY<GridCoordinate2DTemplate, PYL> (yeeLayout, gridStep, SigmaZ);
 };
 template <>
 void
@@ -2266,15 +2287,15 @@ template <>
 void
 Scheme<SchemeType::Dim2_TMx, GridCoordinate2DTemplate, PYL>::initSigmas ()
 {
-  SchemeHelper::initSigmaX<GridCoordinate2DTemplate, PYL> (yeeLayout, gridStep, SigmaX);
-  SchemeHelper::initSigmaY<GridCoordinate2DTemplate, PYL> (yeeLayout, gridStep, SigmaY);
+  SchemeHelper::initSigmaX<GridCoordinate2DTemplate, PYL> (yeeLayout, gridStep, SigmaY);
+  SchemeHelper::initSigmaY<GridCoordinate2DTemplate, PYL> (yeeLayout, gridStep, SigmaZ);
 };
 template <>
 void
 Scheme<SchemeType::Dim2_TMy, GridCoordinate2DTemplate, PYL>::initSigmas ()
 {
   SchemeHelper::initSigmaX<GridCoordinate2DTemplate, PYL> (yeeLayout, gridStep, SigmaX);
-  SchemeHelper::initSigmaY<GridCoordinate2DTemplate, PYL> (yeeLayout, gridStep, SigmaY);
+  SchemeHelper::initSigmaY<GridCoordinate2DTemplate, PYL> (yeeLayout, gridStep, SigmaZ);
 };
 template <>
 void
@@ -2301,19 +2322,19 @@ template <>
 void
 Scheme<SchemeType::Dim1_ExHy, GridCoordinate1DTemplate, YL1D>::initSigmas ()
 {
-  SchemeHelper::initSigmaX<GridCoordinate1DTemplate, YL1D> (yeeLayout, gridStep, SigmaX);
+  SchemeHelper::initSigmaX<GridCoordinate1DTemplate, YL1D> (yeeLayout, gridStep, SigmaZ);
 };
 template <>
 void
 Scheme<SchemeType::Dim1_ExHz, GridCoordinate1DTemplate, YL1D>::initSigmas ()
 {
-  SchemeHelper::initSigmaX<GridCoordinate1DTemplate, YL1D> (yeeLayout, gridStep, SigmaX);
+  SchemeHelper::initSigmaX<GridCoordinate1DTemplate, YL1D> (yeeLayout, gridStep, SigmaY);
 };
 template <>
 void
 Scheme<SchemeType::Dim1_EyHx, GridCoordinate1DTemplate, YL1D>::initSigmas ()
 {
-  SchemeHelper::initSigmaX<GridCoordinate1DTemplate, YL1D> (yeeLayout, gridStep, SigmaX);
+  SchemeHelper::initSigmaX<GridCoordinate1DTemplate, YL1D> (yeeLayout, gridStep, SigmaZ);
 };
 template <>
 void
@@ -2325,7 +2346,7 @@ template <>
 void
 Scheme<SchemeType::Dim1_EzHx, GridCoordinate1DTemplate, YL1D>::initSigmas ()
 {
-  SchemeHelper::initSigmaX<GridCoordinate1DTemplate, YL1D> (yeeLayout, gridStep, SigmaX);
+  SchemeHelper::initSigmaX<GridCoordinate1DTemplate, YL1D> (yeeLayout, gridStep, SigmaY);
 };
 template <>
 void
@@ -2338,15 +2359,15 @@ template <>
 void
 Scheme<SchemeType::Dim2_TEx, GridCoordinate2DTemplate, YL2D>::initSigmas ()
 {
-  SchemeHelper::initSigmaX<GridCoordinate2DTemplate, YL2D> (yeeLayout, gridStep, SigmaX);
-  SchemeHelper::initSigmaY<GridCoordinate2DTemplate, YL2D> (yeeLayout, gridStep, SigmaY);
+  SchemeHelper::initSigmaX<GridCoordinate2DTemplate, YL2D> (yeeLayout, gridStep, SigmaY);
+  SchemeHelper::initSigmaY<GridCoordinate2DTemplate, YL2D> (yeeLayout, gridStep, SigmaZ);
 };
 template <>
 void
 Scheme<SchemeType::Dim2_TEy, GridCoordinate2DTemplate, YL2D>::initSigmas ()
 {
   SchemeHelper::initSigmaX<GridCoordinate2DTemplate, YL2D> (yeeLayout, gridStep, SigmaX);
-  SchemeHelper::initSigmaY<GridCoordinate2DTemplate, YL2D> (yeeLayout, gridStep, SigmaY);
+  SchemeHelper::initSigmaY<GridCoordinate2DTemplate, YL2D> (yeeLayout, gridStep, SigmaZ);
 };
 template <>
 void
@@ -2359,15 +2380,15 @@ template <>
 void
 Scheme<SchemeType::Dim2_TMx, GridCoordinate2DTemplate, YL2D>::initSigmas ()
 {
-  SchemeHelper::initSigmaX<GridCoordinate2DTemplate, YL2D> (yeeLayout, gridStep, SigmaX);
-  SchemeHelper::initSigmaY<GridCoordinate2DTemplate, YL2D> (yeeLayout, gridStep, SigmaY);
+  SchemeHelper::initSigmaX<GridCoordinate2DTemplate, YL2D> (yeeLayout, gridStep, SigmaY);
+  SchemeHelper::initSigmaY<GridCoordinate2DTemplate, YL2D> (yeeLayout, gridStep, SigmaZ);
 };
 template <>
 void
 Scheme<SchemeType::Dim2_TMy, GridCoordinate2DTemplate, YL2D>::initSigmas ()
 {
   SchemeHelper::initSigmaX<GridCoordinate2DTemplate, YL2D> (yeeLayout, gridStep, SigmaX);
-  SchemeHelper::initSigmaY<GridCoordinate2DTemplate, YL2D> (yeeLayout, gridStep, SigmaY);
+  SchemeHelper::initSigmaY<GridCoordinate2DTemplate, YL2D> (yeeLayout, gridStep, SigmaZ);
 };
 template <>
 void
@@ -3662,9 +3683,18 @@ Scheme<Type, TCoord, Layout>::initGrids ()
 
     if (solverSettings.getDoUsePML ())
     {
-      ((ParallelGrid *) SigmaX)->share ();
-      ((ParallelGrid *) SigmaY)->share ();
-      ((ParallelGrid *) SigmaZ)->share ();
+      if (doNeedSigmaX)
+      {
+        ((ParallelGrid *) SigmaX)->share ();
+      }
+      if (doNeedSigmaY)
+      {
+        ((ParallelGrid *) SigmaY)->share ();
+      }
+      if (doNeedSigmaZ)
+      {
+        ((ParallelGrid *) SigmaZ)->share ();
+      }
     }
 #else
     ASSERT_MESSAGE ("Solver is not compiled with support of parallel grid. Recompile it with -DPARALLEL_GRID=ON.");
@@ -5051,9 +5081,18 @@ Scheme<Type, TCoord, Layout>::additionalUpdateOfGrids (time_step t, time_step &d
             }
           }
 
-          ((ParallelGrid *) SigmaX)->Resize (parallelYeeLayout->getEpsSizeForCurNode ());
-          ((ParallelGrid *) SigmaY)->Resize (parallelYeeLayout->getEpsSizeForCurNode ());
-          ((ParallelGrid *) SigmaZ)->Resize (parallelYeeLayout->getEpsSizeForCurNode ());
+          if (doNeedSigmaX)
+          {
+            ((ParallelGrid *) SigmaX)->Resize (parallelYeeLayout->getEpsSizeForCurNode ());
+          }
+          if (doNeedSigmaY)
+          {
+            ((ParallelGrid *) SigmaY)->Resize (parallelYeeLayout->getEpsSizeForCurNode ());
+          }
+          if (doNeedSigmaZ)
+          {
+            ((ParallelGrid *) SigmaZ)->Resize (parallelYeeLayout->getEpsSizeForCurNode ());
+          }
         }
 
         if (solverSettings.getDoUseAmplitudeMode ())
