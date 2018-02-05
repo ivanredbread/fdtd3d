@@ -29,6 +29,6 @@
 #--same-size-tfsf
 #--save-tfsf-e-incident
 #--save-tfsf-h-incident
---point-source-pos-x 50
---point-source-pos-y 50
---point-source-ez
+#--point-source-pos-x 50
+#--point-source-pos-y 50
+#--point-source-ez

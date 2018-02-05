@@ -927,43 +927,61 @@ void Scheme<Type, TCoord, Layout>::calculateTFSF (TC posAbs,
     {
       case (static_cast<uint8_t> (GridType::EX)):
       {
-        TCFP realCoord = yeeLayout->getHzCoordFP (Hz->getTotalPosition (auxPos1));
-        diff1 = yeeLayout->getHzFromIncidentH (approximateIncidentWaveH (realCoord));
+        if (doNeedHz)
+        {
+          TCFP realCoord = yeeLayout->getHzCoordFP (Hz->getTotalPosition (auxPos1));
+          diff1 = yeeLayout->getHzFromIncidentH (approximateIncidentWaveH (realCoord));
+        }
 
         break;
       }
       case (static_cast<uint8_t> (GridType::EY)):
       {
-        TCFP realCoord = yeeLayout->getHxCoordFP (Hx->getTotalPosition (auxPos1));
-        diff1 = yeeLayout->getHxFromIncidentH (approximateIncidentWaveH (realCoord));
+        if (doNeedHx)
+        {
+          TCFP realCoord = yeeLayout->getHxCoordFP (Hx->getTotalPosition (auxPos1));
+          diff1 = yeeLayout->getHxFromIncidentH (approximateIncidentWaveH (realCoord));
+        }
 
         break;
       }
       case (static_cast<uint8_t> (GridType::EZ)):
       {
-        TCFP realCoord = yeeLayout->getHyCoordFP (Hy->getTotalPosition (auxPos1));
-        diff1 = yeeLayout->getHyFromIncidentH (approximateIncidentWaveH (realCoord));
+        if (doNeedHy)
+        {
+          TCFP realCoord = yeeLayout->getHyCoordFP (Hy->getTotalPosition (auxPos1));
+          diff1 = yeeLayout->getHyFromIncidentH (approximateIncidentWaveH (realCoord));
+        }
 
         break;
       }
       case (static_cast<uint8_t> (GridType::HX)):
       {
-        TCFP realCoord = yeeLayout->getEyCoordFP (Ey->getTotalPosition (auxPos1));
-        diff1 = FPValue (-1.0) * yeeLayout->getEyFromIncidentE (approximateIncidentWaveE (realCoord));
+        if (doNeedEy)
+        {
+          TCFP realCoord = yeeLayout->getEyCoordFP (Ey->getTotalPosition (auxPos1));
+          diff1 = FPValue (-1.0) * yeeLayout->getEyFromIncidentE (approximateIncidentWaveE (realCoord));
+        }
 
         break;
       }
       case (static_cast<uint8_t> (GridType::HY)):
       {
-        TCFP realCoord = yeeLayout->getEzCoordFP (Ez->getTotalPosition (auxPos1));
-        diff1 = FPValue (-1.0) * yeeLayout->getEzFromIncidentE (approximateIncidentWaveE (realCoord));
+        if (doNeedEz)
+        {
+          TCFP realCoord = yeeLayout->getEzCoordFP (Ez->getTotalPosition (auxPos1));
+          diff1 = FPValue (-1.0) * yeeLayout->getEzFromIncidentE (approximateIncidentWaveE (realCoord));
+        }
 
         break;
       }
       case (static_cast<uint8_t> (GridType::HZ)):
       {
-        TCFP realCoord = yeeLayout->getExCoordFP (Ex->getTotalPosition (auxPos1));
-        diff1 = FPValue (-1.0) * yeeLayout->getExFromIncidentE (approximateIncidentWaveE (realCoord));
+        if (doNeedEx)
+        {
+          TCFP realCoord = yeeLayout->getExCoordFP (Ex->getTotalPosition (auxPos1));
+          diff1 = FPValue (-1.0) * yeeLayout->getExFromIncidentE (approximateIncidentWaveE (realCoord));
+        }
 
         break;
       }
@@ -980,43 +998,61 @@ void Scheme<Type, TCoord, Layout>::calculateTFSF (TC posAbs,
     {
       case (static_cast<uint8_t> (GridType::EX)):
       {
-        TCFP realCoord = yeeLayout->getHyCoordFP (Hy->getTotalPosition (auxPos2));
-        diff2 = yeeLayout->getHyFromIncidentH (approximateIncidentWaveH (realCoord));
+        if (doNeedHy)
+        {
+          TCFP realCoord = yeeLayout->getHyCoordFP (Hy->getTotalPosition (auxPos2));
+          diff2 = yeeLayout->getHyFromIncidentH (approximateIncidentWaveH (realCoord));
+        }
 
         break;
       }
       case (static_cast<uint8_t> (GridType::EY)):
       {
-        TCFP realCoord = yeeLayout->getHzCoordFP (Hz->getTotalPosition (auxPos2));
-        diff2 = yeeLayout->getHzFromIncidentH (approximateIncidentWaveH (realCoord));
+        if (doNeedHz)
+        {
+          TCFP realCoord = yeeLayout->getHzCoordFP (Hz->getTotalPosition (auxPos2));
+          diff2 = yeeLayout->getHzFromIncidentH (approximateIncidentWaveH (realCoord));
+        }
 
         break;
       }
       case (static_cast<uint8_t> (GridType::EZ)):
       {
-        TCFP realCoord = yeeLayout->getHxCoordFP (Hx->getTotalPosition (auxPos2));
-        diff2 = yeeLayout->getHxFromIncidentH (approximateIncidentWaveH (realCoord));
+        if (doNeedHx)
+        {
+          TCFP realCoord = yeeLayout->getHxCoordFP (Hx->getTotalPosition (auxPos2));
+          diff2 = yeeLayout->getHxFromIncidentH (approximateIncidentWaveH (realCoord));
+        }
 
         break;
       }
       case (static_cast<uint8_t> (GridType::HX)):
       {
-        TCFP realCoord = yeeLayout->getEzCoordFP (Ez->getTotalPosition (auxPos2));
-        diff2 = FPValue (-1.0) * yeeLayout->getEzFromIncidentE (approximateIncidentWaveE (realCoord));
+        if (doNeedEz)
+        {
+          TCFP realCoord = yeeLayout->getEzCoordFP (Ez->getTotalPosition (auxPos2));
+          diff2 = FPValue (-1.0) * yeeLayout->getEzFromIncidentE (approximateIncidentWaveE (realCoord));
+        }
 
         break;
       }
       case (static_cast<uint8_t> (GridType::HY)):
       {
-        TCFP realCoord = yeeLayout->getExCoordFP (Ex->getTotalPosition (auxPos2));
-        diff2 = FPValue (-1.0) * yeeLayout->getExFromIncidentE (approximateIncidentWaveE (realCoord));
+        if (doNeedEx)
+        {
+          TCFP realCoord = yeeLayout->getExCoordFP (Ex->getTotalPosition (auxPos2));
+          diff2 = FPValue (-1.0) * yeeLayout->getExFromIncidentE (approximateIncidentWaveE (realCoord));
+        }
 
         break;
       }
       case (static_cast<uint8_t> (GridType::HZ)):
       {
-        TCFP realCoord = yeeLayout->getEyCoordFP (Ey->getTotalPosition (auxPos2));
-        diff2 = FPValue (-1.0) * yeeLayout->getEyFromIncidentE (approximateIncidentWaveE (realCoord));
+        if (doNeedEy)
+        {
+          TCFP realCoord = yeeLayout->getEyCoordFP (Ey->getTotalPosition (auxPos2));
+          diff2 = FPValue (-1.0) * yeeLayout->getEyFromIncidentE (approximateIncidentWaveE (realCoord));
+        }
 
         break;
       }
@@ -1488,18 +1524,29 @@ Scheme<Type, TCoord, Layout>::calculateFieldStepIteration (time_step t,
     Cb = gridTimeStep / (material * materialModifier * gridStep);
   }
 
-  FieldPointValue *val11 = oppositeGrid1->getFieldPointValue (pos11);
-  FieldPointValue *val12 = oppositeGrid1->getFieldPointValue (pos12);
-
-  FieldPointValue *val21 = oppositeGrid2->getFieldPointValue (pos21);
-  FieldPointValue *val22 = oppositeGrid2->getFieldPointValue (pos22);
-
   // TODO: separate previous grid and current
-  FieldValue prev11 = val11->getPrevValue ();
-  FieldValue prev12 = val12->getPrevValue ();
+  FieldValue prev11;
+  FieldValue prev12;
+  FieldValue prev21;
+  FieldValue prev22;
 
-  FieldValue prev21 = val21->getPrevValue ();
-  FieldValue prev22 = val22->getPrevValue ();
+  if (oppositeGrid1)
+  {
+    FieldPointValue *val11 = oppositeGrid1->getFieldPointValue (pos11);
+    FieldPointValue *val12 = oppositeGrid1->getFieldPointValue (pos12);
+
+    prev11 = val11->getPrevValue ();
+    prev12 = val12->getPrevValue ();
+  }
+
+  if (oppositeGrid2)
+  {
+    FieldPointValue *val21 = oppositeGrid2->getFieldPointValue (pos21);
+    FieldPointValue *val22 = oppositeGrid2->getFieldPointValue (pos22);
+
+    prev21 = val21->getPrevValue ();
+    prev22 = val22->getPrevValue ();
+  }
 
   if (solverSettings.getDoUseTFSF ())
   {
@@ -1905,8 +1952,10 @@ Scheme<Type, TCoord, Layout>::calculateFieldStep (time_step t, TC start, TC end)
     &oppositeGrid1, &oppositeGrid2, &gridPML1, &gridPMLType1, &gridPML2, &gridPMLType2,
     &rightSideFunc, &borderFunc, &exactFunc, &materialModifier);
 
-  GridCoordinate3D start3D = expandTo3D (start);
-  GridCoordinate3D end3D = expandTo3D (end);
+  GridCoordinate3D start3D;
+  GridCoordinate3D end3D;
+
+  expandTo3DStartEnd (start, end, start3D, end3D);
 
   // TODO: remove this check for each iteration
   if (t > 0)
